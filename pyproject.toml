@@ -1,0 +1,22 @@
+[project]
+name = "librarian"
+version = "0.1.0"
+description = "Course-material librarian: dedupe, categorize, version-stack, catalog (CATALOG.md)"
+requires-python = ">=3.11"
+dependencies = [
+    "pyyaml>=6",
+    "loguru>=0.7",
+    "click>=8.1",
+    "python-pptx>=1.0",
+    "pypdf>=4",
+    "python-docx>=1.1",
+]
+
+[project.optional-dependencies]
+dev = ["pytest>=8", "ruff>=0.6"]
+
+[project.scripts]
+librarian = "librarian.cli:main"
+
+[tool.ruff]
+line-length = 110

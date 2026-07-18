@@ -27,10 +27,22 @@ def load_yaml(path: Path) -> Any:
     return yaml.safe_load(path.read_text(encoding="utf-8"))
 
 
+def plain(data: Any) -> Any:
+    """Coerce str/int/float subclasses (pypdf TextStringObject etc.) to yaml-safe builtins."""
+    if isinstance(data, dict):
+        return {plain(k): plain(v) for k, v in data.items()}
+    if isinstance(data, (list, tuple)):
+        return [plain(v) for v in data]
+    for t in (bool, int, float, str):
+        if isinstance(data, t):
+            return t(data)
+    return data if data is None else str(data)
+
+
 def dump_yaml(data: Any, path: Path) -> None:
     path.parent.mkdir(parents=True, exist_ok=True)
     path.write_text(
-        yaml.safe_dump(data, allow_unicode=True, sort_keys=False, width=100),
+        yaml.safe_dump(plain(data), allow_unicode=True, sort_keys=False, width=100),
         encoding="utf-8",
     )
 

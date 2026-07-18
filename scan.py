@@ -11,7 +11,15 @@ from pathlib import Path
 
 from loguru import logger as log
 
+from . import settings
 from .utils import categorize, is_skipped, parse_stack, sha256_of
+
+
+def _is_evicted(p: Path) -> bool:
+    """True for iCloud-dataless files (size > 0 but zero blocks on disk) — reading
+    them triggers a network download that can hang for minutes when offline."""
+    st = p.stat()
+    return st.st_size > 0 and getattr(st, "st_blocks", 1) == 0
 
 
 @dataclass
@@ -37,8 +45,13 @@ def scan_roots(roots: list[Path]) -> list[Record]:
         if not root.exists():
             raise FileNotFoundError(f"source root does not exist: {root}")
         files = [root] if root.is_file() else sorted(p for p in root.rglob("*") if p.is_file())
+        skip_evicted = settings.get("skip_evicted_cloud_files")
+        evicted = 0
         for p in files:
             if is_skipped(p):
+                continue
+            if skip_evicted and _is_evicted(p):
+                evicted += 1
                 continue
             stack, version, copy_n = parse_stack(p.stem)
             st = p.stat()
@@ -58,6 +71,8 @@ def scan_roots(roots: list[Path]) -> list[Record]:
                     copy=copy_n,
                 )
             )
+        if evicted:
+            log.warning("{}: skipped {} evicted (cloud-dataless) files — download them and rescan", root, evicted)
     log.info("scanned {} files across {} roots", len(records), len(roots))
     return records
 

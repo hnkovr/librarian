@@ -29,7 +29,9 @@ def collect(data_root: Path) -> dict[str, list[dict]]:
     """Docprops for every *current* file, grouped by category dir; sorted for determinism."""
     hist = settings.get("history_dirname")
     by_cat: dict[str, list[dict]] = {}
-    for cat_dir in sorted(p for p in data_root.iterdir() if p.is_dir() and not p.name.startswith(".")):
+    excluded = set(settings.get("catalog", "exclude_dirs"))
+    for cat_dir in sorted(p for p in data_root.iterdir()
+                          if p.is_dir() and not p.name.startswith(".") and p.name not in excluded):
         rows = []
         for f in sorted(cat_dir.rglob("*")):
             if not f.is_file() or is_skipped(f) or hist in f.parts:

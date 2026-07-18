@@ -10,7 +10,8 @@ librarian:
   # Files/dirs never inventoried or moved.
   skip_names: [".DS_Store", ".gitkeep", ".gitignore"]
   skip_prefixes: ["~$", ".~lock", ".~", "._"]
-  skip_dir_names: [".git", ".history", "__pycache__", ".state", ".archive"]
+  # NB: .history is NOT skipped — stored old versions must join dedupe as "existing".
+  skip_dir_names: [".git", "__pycache__", ".state", ".archive"]
   # macOS/iCloud: skip dataless (evicted) files instead of hanging on network reads.
   skip_evicted_cloud_files: true
   # Source subtrees handled out-of-band (e.g. embedded git repos → submodules).

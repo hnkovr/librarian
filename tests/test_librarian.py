@@ -82,6 +82,19 @@ def test_plan_demotes_existing_current(tmp_path):
     assert by["/s/d-v6.pptx"]["reason"] == "current version"
 
 
+def test_plan_history_existing_dedupes_but_never_demotes(tmp_path):
+    data_root = tmp_path / "data"
+    hist = _rec(path=str(data_root / "decks/.history/d-v2.pptx"), name="d-v2.pptx",
+                stack="d", version=[2], sha256="h2")
+    same = _rec(path="/s/d-v2.pptx", name="d-v2.pptx", stack="d", version=[2], sha256="h2")
+    newer = _rec(path="/s/d-v3.pptx", name="d-v3.pptx", stack="d", version=[3], sha256="h3")
+    actions = plan_moves([same, newer], existing=[hist], data_root=data_root)
+    by = {a["src"]: a for a in actions}
+    assert by["/s/d-v2.pptx"]["action"] == "skip-duplicate"
+    assert by["/s/d-v3.pptx"]["reason"] == "current version"
+    assert all(a["action"] != "demote" for a in actions)
+
+
 def test_plan_existing_content_wins(tmp_path):
     existing = _rec(path="/data/decks/d.pptx", sha256="same")
     incoming = _rec(path="/s/d.pptx", sha256="same")

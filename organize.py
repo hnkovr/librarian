@@ -58,9 +58,12 @@ def plan_moves(incoming: list[Record], existing: list[Record], data_root: Path) 
 
     # 2+3. stacks over kept incoming + existing (existing participate in ranking).
     stacks: dict[tuple[str, str], list[tuple[str, Record]]] = defaultdict(list)
+    hist_frag = f"/{settings.get('history_dirname')}/"
     for r in kept:
         stacks[(r.category, normalize_name(r.stack).casefold())].append(("in", r))
     for r in existing:
+        if hist_frag in r.path:
+            continue  # already-archived versions: dedupe only, never re-ranked/demoted
         stacks[(r.category, normalize_name(r.stack).casefold())].append(("ex", r))
 
     for (_cat, _key), members in sorted(stacks.items()):

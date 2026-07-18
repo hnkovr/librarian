@@ -10,13 +10,12 @@ from __future__ import annotations
 from pathlib import Path
 
 import click
-from loguru import logger as log
 
 from . import settings
 from .catalog import build_catalog
 from .docprops import props_for
 from .organize import apply_plan, plan_moves
-from .scan import Record, scan_roots, to_dicts
+from .scan import scan_roots, to_dicts
 from .utils import dump_yaml, load_yaml
 
 
